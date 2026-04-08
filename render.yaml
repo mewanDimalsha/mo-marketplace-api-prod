@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: mo-marketplace-api
+    runtime: docker
+    plan: starter
+    buildCommand: docker build -t mo-marketplace-api .
+    startCommand: docker run -p $PORT:3000 mo-marketplace-api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        fromSecret: db_host
+      - key: DB_PORT
+        fromSecret: db_port
+      - key: DB_USERNAME
+        fromSecret: db_username
+      - key: DB_PASSWORD
+        fromSecret: db_password
+      - key: DB_NAME
+        fromSecret: db_name
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES
+        value: 7d
+      - key: CLOUDINARY_NAME
+        fromSecret: cloudinary_name
+      - key: CLOUDINARY_KEY
+        fromSecret: cloudinary_key
+      - key: CLOUDINARY_SECRET
+        fromSecret: cloudinary_secret
+
+  - type: pserv
+    name: mo-marketplace-db
+    runtime: postgres
+    plan: starter
+    # Database will be automatically created and secrets will be available
