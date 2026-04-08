@@ -3,13 +3,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --only=production
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files and lock file
+COPY package*.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy source code and build
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Production image
 FROM node:20-alpine
