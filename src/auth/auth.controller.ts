@@ -1,60 +1,40 @@
-import {
-    Controller,
-    Post,
-    Body,
-    UseGuards,
-    Request,
-} from '@nestjs/common';
-import {
-    ApiTags,
-    ApiOperation,
-    ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { RefreshDto } from './dto/refresh.dto';
+import { User } from './entities/user.entity';
 
-// DTO for refresh endpoint
-class RefreshDto {
-    @ApiProperty({ example: 'your_refresh_token_here' })
-    @IsString()
-    refresh_token: string;
-}
-
-@ApiTags('Auth')
-@Controller('auth')
+@ApiTags('Auth') // groups all these endpoints under the "Auth" section in Swagger UI
+@Controller('auth') //base route: /auth
 export class AuthController {
-    constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
-    @Post('register')
-    @ApiOperation({ summary: 'Register a new user' })
-    register(@Body() dto: RegisterDto) {
-        return this.authService.register(dto);
-    }
+  @Post('register') // POST /auth/register
+  @ApiOperation({ summary: 'Register a new user' }) // adds a description in Swagger UI
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto); // calls the register method in AuthService with the incoming DTO
+  }
 
-    @Post('login')
-    @ApiOperation({ summary: 'Login — returns access + refresh tokens' })
-    login(@Body() dto: LoginDto) {
-        return this.authService.login(dto);
-    }
+  @Post('login')
+  @ApiOperation({ summary: 'Login — returns access + refresh tokens' })
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
 
-    @Post('refresh')
-    @ApiOperation({ summary: 'Get new access token using refresh token' })
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    refresh(@Request() req, @Body() body: RefreshDto) {
-        // req.user is attached by JwtStrategy.validate()
-        return this.authService.refresh(req.user.id, body.refresh_token);
-    }
+  @Post('refresh')
+  @ApiOperation({ summary: 'Get new access token using refresh token' })
+  refresh(@Body() body: RefreshDto) {
+    return this.authService.refresh(body.refresh_token); // we only need the refresh token from the body to get a new access token
+  }
 
-    @Post('logout')
-    @ApiOperation({ summary: 'Logout — invalidates refresh token' })
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    logout(@Request() req) {
-        return this.authService.logout(req.user.id);
-    }
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout — invalidates refresh token' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  logout(@Request() req: { user: User }) {
+    return this.authService.logout(req.user.id);
+  }
 }

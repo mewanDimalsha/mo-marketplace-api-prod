@@ -2,19 +2,17 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { User } from './auth/entities/user.entity';
 import { ProductsModule } from './products/products.module';
-import { Product } from './products/entities/product.entity';
-import { Variant } from './products/entities/variant.entity';
 import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
+  //The @Module decorator is what makes this a NestJS module. The imports array boot up and wire together everything listed here.
   imports: [
-    // Step 1: Load .env file globally
     ConfigModule.forRoot({ isGlobal: true }),
-
-    // Step 2: Connect to PostgreSQL
+    // loads .env file and makes env variables available globally via ConfigService
+    //isGlobal: true, means you never need to import ConfigModule again in any other module. Without it, every module (AuthModule, ProductsModule) that needs an env variable would have to import ConfigModule themselves.
     TypeOrmModule.forRootAsync({
+      //sets up your one global database connection for the entire app
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
@@ -23,8 +21,8 @@ import { UploadsModule } from './uploads/uploads.module';
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [User, Product, Variant],
-        synchronize: true, // Temporarily enabled to create tables in production
+        autoLoadEntities: true,
+        synchronize: config.get('NODE_ENV') !== 'production',
         ssl:
           config.get('NODE_ENV') === 'production'
             ? { rejectUnauthorized: false }

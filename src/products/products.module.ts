@@ -6,8 +6,8 @@ import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Variant])],
-  providers: [ProductsService],
-  controllers: [ProductsController],
+  imports: [TypeOrmModule.forFeature([Product, Variant])], // Register Product and Variant entities with TypeORM
+  providers: [ProductsService], // Register the ProductsService as a provider for dependency injection
+  controllers: [ProductsController], // Register the ProductsController to handle incoming requests related to products
 })
-export class ProductsModule { }
+export class ProductsModule {}
