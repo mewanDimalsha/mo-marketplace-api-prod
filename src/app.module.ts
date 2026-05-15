@@ -23,10 +23,10 @@ import { UploadsModule } from './uploads/uploads.module';
         database: config.get('DB_NAME'),
         autoLoadEntities: true,
         synchronize: config.get('NODE_ENV') !== 'production',
-        ssl:
-          config.get('NODE_ENV') === 'production'
-            ? { rejectUnauthorized: false }
-            : false,
+        ssl: { rejectUnauthorized: false },
+        extra: {
+          ssl: { rejectUnauthorized: false },
+        },
       }),
       inject: [ConfigService],
     }),
